@@ -15,8 +15,8 @@ from rapidfuzz import fuzz
 # 2. Création de l'API
 app = FastAPI()
 
-Cette ligne crée l'application FastAPI.
-Toutes les requêtes des utilisateurs passeront par cette application.
++ Cette ligne crée l'application FastAPI.
++ Toutes les requêtes des utilisateurs passeront par cette application.
 
 # 3. Configuration CORS
 
@@ -28,22 +28,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Cette partie autorise n'importe quel site web à communiquer avec notre API.
-Sans cette configuration, un navigateur peut bloquer les requêtes.
++ Cette partie autorise n'importe quel site web à communiquer avec notre API.
++ Sans cette configuration, un navigateur peut bloquer les requêtes.
 
 # 4. Chargement du modèle OCR
 
 reader = easyocr.Reader(['fr', 'en'])
 
-Ici on crée un objet Reader ensuite charge le modèle d'intelligence artificielle d'EasyOCR.
-
-Il est capable de reconnaître : Francais/Arabe/Anglais
++ Ici on crée un objet Reader ensuite charge le modèle d'intelligence artificielle d'EasyOCR.
++ Il est capable de reconnaître : Francais/Arabe/Anglais
 
 
 # 5. Chargement de la base de données
 
-meds = pd.read_excel("medications.xlsx", usecols="B:F")
-meds.columns = meds.columns.str.strip().str.upper()
+meds = pd.read_excel("medications.xlsx", usecols="B:F")                                                                                    meds.columns = meds.columns.str.strip().str.upper()
 
 Explication:
 + Cette ligne ouvre le fichier Excel contenant les médicaments.
