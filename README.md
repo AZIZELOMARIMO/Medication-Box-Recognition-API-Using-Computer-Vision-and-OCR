@@ -30,3 +30,22 @@ app.add_middleware(
 
 Cette partie autorise n'importe quel site web à communiquer avec notre API.
 Sans cette configuration, un navigateur peut bloquer les requêtes.
+
+# 4. Chargement du modèle OCR
+
+reader = easyocr.Reader(['fr', 'en'])
+
+Ici on crée un objet Reader ensuite charge le modèle d'intelligence artificielle d'EasyOCR.
+
+Il est capable de reconnaître : Francais/Arabe/Anglais
+
+
+# 5. Chargement de la base de données
+
+meds = pd.read_excel("medications.xlsx", usecols="B:F")
+meds.columns = meds.columns.str.strip().str.upper()
+
+Explication:
++ Cette ligne ouvre le fichier Excel contenant les médicaments.
++ Enlève les espaces inutiles
++ Transforme tous les noms de colonnes en majuscules
