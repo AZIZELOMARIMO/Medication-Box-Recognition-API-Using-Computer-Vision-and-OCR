@@ -1,152 +1,327 @@
 # Medication-Box-Recognition-API-Using-Computer-Vision-and-OCR
 Recognizing a medication from an image of its box or packaging can be highly useful in digital healthcare  applications. Such recognition is challenging because it may involve visual similarity between products, varying  image quality, and multilingual text appearing on packaging, especially in Arabic and French.
 
-# 1. Importation des bibliothèques
-from fastapi import FastAPI, File, UploadFile.
+# FastAPI Medication Recognition API
 
-import easyocr
+## 1. Importation des bibliothèques
 
-import pandas as pd
+Le projet utilise plusieurs bibliothèques Python :
 
-import re
+- **FastAPI** : création de l'API REST.
+- **EasyOCR** : extraction du texte depuis une image.
+- **Pandas** : lecture et manipulation de la base de données des médicaments.
+- **Regular Expressions (re)** : extraction des nombres présents dans le texte OCR.
+- **NumPy** : conversion des images en tableaux compatibles avec EasyOCR.
+- **Pillow (PIL)** : ouverture des images reçues par l'API.
+- **io** : lecture des fichiers envoyés par l'utilisateur.
+- **RapidFuzz** : calcul de la similarité entre le texte OCR et les médicaments de la base.
 
-import numpy as np
+---
 
-from PIL import Image
+## 2. Création de l'API
 
-import io
-
-from rapidfuzz import fuzz
-
-
-# 2. Création de l'API
+```python
 app = FastAPI()
+```
 
-+ Cette ligne crée l'application FastAPI.
-+ Toutes les requêtes des utilisateurs passeront par cette application.
+Cette ligne crée l'application **FastAPI**.
 
-# 3. Configuration CORS
+Toutes les requêtes envoyées par les utilisateurs passent par cette application.
 
+---
+
+## 3. Configuration CORS
+
+```python
 app.add_middleware(
     CORSMiddleware,
-    
     allow_origins=["*"],
-    
     allow_credentials=True,
-    
     allow_methods=["*"],
-    
     allow_headers=["*"],
 )
+```
 
-+ Cette partie autorise n'importe quel site web à communiquer avec notre API.
-+ Sans cette configuration, un navigateur peut bloquer les requêtes.
+Cette configuration autorise les applications web à communiquer avec l'API.
 
-# 4. Chargement du modèle OCR
+Elle évite les erreurs de type **Cross-Origin Resource Sharing (CORS)** lors des appels depuis un navigateur.
 
+---
+
+## 4. Chargement du modèle OCR
+
+```python
 reader = easyocr.Reader(['fr', 'en'])
+```
 
-+ Ici on crée un objet Reader ensuite charge le modèle d'intelligence artificielle d'EasyOCR.
-+ Il est capable de reconnaître : Francais/Arabe/Anglais
+Le modèle EasyOCR est chargé une seule fois au démarrage de l'application.
 
+Il permet de reconnaître le texte présent dans les images.
 
-# 5. Chargement de la base de données
+**Langues supportées :**
 
+- Français
+- Anglais
+
+---
+
+## 5. Chargement de la base de données
+
+```python
 meds = pd.read_excel("medications.xlsx", usecols="B:F")
-
 meds.columns = meds.columns.str.strip().str.upper()
+```
 
-Explication:
-+ Cette ligne ouvre le fichier Excel contenant les médicaments.
-+ Enlève les espaces inutiles
-+ Transforme tous les noms de colonnes en majuscules
+La base de données est chargée depuis un fichier Excel.
 
-# 6. Fonction OCR
+Les colonnes sont ensuite :
 
-def extract_text(image_bytes):  #Cette fonction extrait le texte contenu dans une image
+- nettoyées (suppression des espaces inutiles) ;
+- converties en majuscules afin de faciliter les comparaisons.
 
-image = Image.open(io.BytesIO(image_bytes))  #Le fichier reçu par l'API est constitué de bytes ce dernier transforme en image
+---
 
-image = np.array(image) #EasyOCR travaille avec des tableaux NumPy Donc on convertit l'image.
+## 6. Fonction OCR
 
-result = reader.readtext(image) #EasyOCR détecte toutes les zones de texte.
+```python
+def extract_text(image_bytes):
+```
 
-texts = [item[1] for item in result] #Cette ligne récupère uniquement le texte.
+Cette fonction extrait le texte contenu dans l'image.
 
-full_text = " ".join(texts).lower() #Tous les mots sont réunis dans une seule phrase.
+### Étapes :
 
-ocr_numbers = set(re.findall(r'\d+', full_text)) #Cette ligne extrait uniquement les nombres.
+1. Conversion des données reçues (*bytes*) en image.
+2. Conversion de l'image en tableau NumPy.
+3. Détection du texte avec EasyOCR.
+4. Fusion de tous les mots détectés.
+5. Conversion du texte en minuscules.
+6. Extraction des nombres présents dans le texte (dosages).
 
-return full_text, ocr_numbers
+La fonction retourne :
 
-# 7. Filtre NOM
+- le texte complet détecté ;
+- les nombres extraits.
 
-def filter_nom(full_text): #Cette fonction cherche les médicaments dont le nom commercial ressemble au texte détecté.
+---
 
-for _, row in meds.iterrows(): #On parcourt chaque ligne de la base.
+## 7. Filtre par NOM
 
-nom = row["NOM"] # On récupère nom
+```python
+def filter_nom(full_text):
+```
 
-similarity_nom = fuzz.partial_ratio(full_text, nom) #RapidFuzz calcule la ressemblance.
+Cette fonction recherche les médicaments dont le **nom commercial** ressemble au texte détecté.
 
-similarity_nom >=50 # Si cette condition est vérifier le médicament est conservé Sinon il est rejeté.
+Pour chaque médicament :
 
-# 8. Filtre DCI
+- récupération du nom (`NOM`) ;
+- calcul du pourcentage de similarité avec **RapidFuzz** ;
+- conservation des médicaments dont la similarité est supérieure ou égale à **50 %**.
 
-filter_dci() # Maintenant on compare le principe actif.RapidFuzz calcule encore la similarité,si elle est suffisante, le médicament reste dans la liste.
+---
 
-# 9. Scoring
+## 8. Filtre par DCI
 
-def scoring() # Cette fonction ajoute des points.
+```python
+def filter_dci(...)
+```
 
-score = 0
+Cette étape compare le **principe actif (DCI)** avec le texte extrait par OCR.
 
-DOSAGE1 # On récupère dosage
+RapidFuzz calcule également la similarité.
 
-re.findall() # extrait le nombre
+Les médicaments ayant une correspondance suffisante sont conservés.
 
-score +=2 # Si ce nombre existe aussi dans l'image OCR,Le médicament gagne deux points.
+---
 
-# 10. Endpoint API
+## 9. Calcul du score
 
-@app.post("/predict") # C'est la route principale lorsque l'utilisateur envoie une image,cette fonction est exécutée.
+```python
+def scoring(...)
+```
 
-image_bytes = await file.read() # On lit l'image.
+Chaque médicament reçoit un score en fonction des informations retrouvées dans l'image.
 
-extract_text() # OCR
+### Exemple :
 
-filter_nom() # Recherche du NOM
+- correspondance du dosage → **+2 points**
+- correspondance du nom → points supplémentaires
+- correspondance de la DCI → points supplémentaires
 
-filter_dci() # Recherche du DCI
+Le médicament ayant le score le plus élevé sera sélectionné.
 
-scoring() # Calcul du score
+---
 
-best = max(...) # Choix du meilleur médicament ayant le score le plus élevé
+## 10. Endpoint de l'API
 
-# 11. Résultat envoyé
+```python
+@app.post("/predict")
+```
 
-Si un médicament est trouvé
+Cette route est appelée lorsqu'un utilisateur envoie une image.
 
-return {
-    "status":"found",     
-    
-    ...
-} 
+Les étapes exécutées sont les suivantes :
 
-L'API renvoie par exemple :
+1. Lecture de l'image.
+2. Extraction du texte (OCR).
+3. Recherche par NOM.
+4. Recherche par DCI.
+5. Calcul des scores.
+6. Sélection du meilleur médicament.
 
+---
+
+## 11. Réponse de l'API
+
+Si un médicament est identifié, l'API retourne une réponse au format JSON.
+
+### Exemple
+
+```json
 {
- "status":"found",
- 
- "medicine":{
- 
-   "NOM":"Doliprane",
-   
-   "DCI":"Paracétamol",
+  "status": "found",
+  "medicine": {
+    "NOM": "Doliprane",
+    "DCI": "Paracétamol",
+    "DOSAGE1": "1000",
+    "UNITE_DOSAGE1": "mg"
+  }
+}
+```
 
-   "DOSAGE1":"1000",
-   
-   "UNITE_DOSAGE1":"mg",
+Si aucun médicament ne correspond, l'API renvoie :
+
+```json
+{
+  "status": "not_found"
+}
+```
+
+---
+
+
+
+
+   # Arabic Medication Detection using OCR
+
+## 📌 Description
+
+This project detects the name of a medication written in Arabic from an image using **EasyOCR**. The extracted text is compared with a CSV database containing Arabic medication names to identify the medication.
+
+---
+
+## 🚀 Features
+
+- Extract Arabic and English text from images using EasyOCR.
+- Read a medication database from a CSV file.
+- Search for the detected medication name in the database.
+- Display Arabic text correctly using `arabic_reshaper` and `python-bidi`.
+
+---
+
+## 📂 Project Structure
+
+```
+project/
+│── main.py
+│── medicaments_arabe.csv
+│── ar.jpeg
+│── README.md
+```
+
+---
+
+## 🛠️ Requirements
+
+Install the required Python packages:
+
+```bash
+pip install pandas easyocr arabic-reshaper python-bidi
+```
+
+---
+
+## 📄 Dataset
+
+The project uses a CSV file named:
+
+```
+medicaments_arabe.csv
+```
+
+The CSV file should contain at least the following column:
+
+| Column |
+|---------|
+| nom_ar |
+
+Example:
+
+| nom_ar |
+|--------|
+| باراسيتامول |
+| أموكسيسيلين |
+
+---
+
+## ▶️ How It Works
+
+1. Load the medication database.
+2. Read the input image.
+3. Extract Arabic text using EasyOCR.
+4. Convert the extracted text to lowercase.
+5. Search for the medication name in the CSV database.
+6. Display the OCR result and the detected medication.
+
+---
+
+## ▶️ Usage
+
+Replace the image path if needed:
+
+```python
+image = "ar.jpeg"
+```
+
+Run the program:
+
+```bash
+python main.py
+```
+
+Example output:
+
+```
+OCR Text:
+باراسيتامول
+
+Detected Medication:
+باراسيتامول
+```
+
+---
+
+## 📚 Libraries Used
+
+- pandas
+- easyocr
+- arabic-reshaper
+- python-bidi
+
+---
+
+## ⚠️ Notes
+
+- The image should contain clear Arabic text for better OCR accuracy.
+- The medication database must include Arabic medication names in the `nom_ar` column.
+- OCR accuracy depends on the quality of the input image.
+
+---
+
+## 👨‍💻 Author
+
+Developed as a simple OCR-based Arabic medication recognition project using Python.
    
    "FORME":"Comprimé"
  }
