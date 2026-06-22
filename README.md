@@ -205,13 +205,13 @@ Si aucun médicament ne correspond, l'API renvoie :
 
    # Arabic Medication Detection using OCR
 
-## 📌 Description
+##  Description
 
 This project detects the name of a medication written in Arabic from an image using **EasyOCR**. The extracted text is compared with a CSV database containing Arabic medication names to identify the medication.
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Extract Arabic and English text from images using EasyOCR.
 - Read a medication database from a CSV file.
@@ -220,7 +220,7 @@ This project detects the name of a medication written in Arabic from an image us
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 project/
@@ -232,7 +232,7 @@ project/
 
 ---
 
-## 🛠️ Requirements
+##  Requirements
 
 Install the required Python packages:
 
@@ -242,7 +242,7 @@ pip install pandas easyocr arabic-reshaper python-bidi
 
 ---
 
-## 📄 Dataset
+##  Dataset
 
 The project uses a CSV file named:
 
@@ -265,7 +265,7 @@ Example:
 
 ---
 
-## ▶️ How It Works
+##  How It Works
 
 1. Load the medication database.
 2. Read the input image.
@@ -276,7 +276,7 @@ Example:
 
 ---
 
-## ▶️ Usage
+##  Usage
 
 Replace the image path if needed:
 
@@ -287,7 +287,7 @@ image = "ar.jpeg"
 Run the program:
 
 ```bash
-python main.py
+python mainarabic.py
 ```
 
 Example output:
@@ -302,7 +302,7 @@ Detected Medication:
 
 ---
 
-## 📚 Libraries Used
+##  Libraries Used
 
 - pandas
 - easyocr
@@ -311,7 +311,7 @@ Detected Medication:
 
 ---
 
-## ⚠️ Notes
+##  Notes
 
 - The image should contain clear Arabic text for better OCR accuracy.
 - The medication database must include Arabic medication names in the `nom_ar` column.
@@ -319,7 +319,7 @@ Detected Medication:
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 Developed as a simple OCR-based Arabic medication recognition project using Python.
    
